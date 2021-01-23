@@ -1,0 +1,104 @@
+#+Title: How The Web Works Exercise
+#+AUTHOR: Andrew Buckingham
+#+STARTUP: indent
+#+OPTIONS: num:nil toc:nil ^:nil
+#+TODO: TODO(t) |  Started(s) | Waiting(w) | Someday/Maybe(m) | Canceled(c) | DONE(d)(@) | Meeting(M) | Note(n)
+#+FILETAGS: :springboard:
+
+#+INFOJS_OPT: view:t toc:t ltoc:t mouse:underline buttons:0 path:http://thomasf.github.io/solarized-css/org-info.min.js
+# #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="http://thomasf.github.io/solarized-css/solarized-dark.min.css" />
+
+** Part One: Solidify Terminology
+
+ In your own terms, define the following terms:
+
+ - What is HTTP?
+HTTP, or *Hyper Text Transfer Protocol*, is a protocol that allows client computers and servers to send web data back forth across the internet.
+   
+ - What is a URL?
+A URL, or *Uniform Resource Locator*, is the location for an internet resource.
+
+ - What is DNS?
+   Domain Name System is that system that converts human-readable addresses, like "https://www.google.com" into IP addresses.
+
+ - What is a query string?
+   Query strings are key-value pairs that allow you to pass in paremeters into URLs. A common example is for Google searches, where queries can be separated with a `?`
+
+ - What are two HTTP verbs and how are they different?
+   + `GET` requests retrieve data from servers and returns them to the client.
+
+   + `POST` requests send data from the client to the server.
+
+     In the case of a form, `GET` requests could, for example, retrieve and pre-popluate a form with the user's data. If the user wanted to create new data to store on the server, a `POST` request would do that.
+
+ - What is an HTTP request?
+ An HTTP request sends an HTTP request to the server. For example, if I went to Wikipedia and typed in 'Italy' in the search bar.  
+   
+ - What is an HTTP response?
+An HTTP response retrieves data from a server to the client. Continuing with the previous answer the stated that typing 'Itally' into a Wikipedia search form would result in the server checking to see if it could find the appropriate resource, and ensure that the client was authorized to view it. If so, the server would retrieve the data on this page: https://en.wikipedia.org/wiki/Italy and render the HTTP page in my brouwser.
+
+ - What is an HTTP header? Give a couple examples of request and response headers you have seen.
+   Headers provide information about the request or response, including the HTTP status.
+
+   Here are a couple examples:
+
+   1. Google
+      In this example, the response header indicates an HTTP code of 200, which indicates that the resource was found. It also provides information about the encoding and content type, data, security information, and other details.
+   #+begin_example
+     > curl -I https://www.google.com
+     
+     HTTP/2 200
+     content-type: text/html; charset=ISO-8859-1
+     p3p: CP="This is not a P3P policy! See g.co/p3phelp for more info."
+     date: Sat, 23 Jan 2021 04:11:37 GMT
+     server: gws
+     x-xss-protection: 0
+     x-frame-options: SAMEORIGIN
+     expires: Sat, 23 Jan 2021 04:11:37 GMT
+     cache-control: private
+     set-cookie: 1P_JAR=2021-01-23-04; expires=Mon, 22-Feb-2021 04:11:37 GMT; path=/; domain=.google.com; Secure
+     set-cookie: NID=207=DZ_Wbw3oeoFZ7kcFBXsX3nAbJglaI9qFGe6GQ7cyCgfccnu2jm9D2YtrQ0CoxJ2348qmVWtjhNRbnm4hdv17N-b9xi4dHqRFCm3kYOxYcjTDhjxhT-LsNl-bN7W4hrOokq2Fz3twm33wl7OCpp8FvPV9FALZjvD86f0N27sMJhE; expires=Sun, 25-Jul-2021 04:11:37 GMT; path=/; domain=.google.com; HttpOnly
+     alt-svc: h3-29=":443"; ma=2592000,h3-T051=":443"; ma=2592000,h3-Q050=":443"; ma=2592000,h3-Q046=":443"; ma=2592000,h3-Q043=":443"; ma=2592000,quic=":443"; ma=2592000; v="46,43"
+   #+end_example
+
+   2. Github
+      In this example, the response header indicates an HTTP code of 301, which means that the resource will permanentaly redirect to another URL. (I searched for `https://www.github.com), which was redirected to `https://github.com.
+
+      #+begin_example
+        ❯ curl -I https://www.github.com
+        HTTP/2 301
+        content-length: 0
+        location: https://github.com/   
+      #+end_example
+
+      Submitting a cURL request for `https://github` returned a 200 (Success) response, with information on the server, security settings, and cookie data:
+
+      #+begin_example
+        HTTP/2 200 
+        server: GitHub.com
+        date: Sat, 23 Jan 2021 04:21:39 GMT
+        content-type: text/html; charset=utf-8
+        status: 200 OK
+        vary: X-PJAX, Accept-Encoding, Accept, X-Requested-With
+        etag: W/"7d94343a532e06e7b507a22d6dbf2735"
+        cache-control: max-age=0, private, must-revalidate
+        strict-transport-security: max-age=31536000; includeSubdomains; preload
+        x-frame-options: deny
+        x-content-type-options: nosniff
+        x-xss-protection: 1; mode=block
+        referrer-policy: origin-when-cross-origin, strict-origin-when-cross-origin
+        expect-ct: max-age=2592000, report-uri="https://api.github.com/_private/browser/errors"
+        content-security-policy: default-src 'none'; base-uri 'self'; block-all-mixed-content; connect-src 'self' uploads.github.com www.githubstatus.com collector.githubapp.com api.github.com github-cloud.s3.amazonaws.com github-production-repository-file-5c1aeb.s3.amazonaws.com github-production-upload-manifest-file-7fdce7.s3.amazonaws.com github-production-user-asset-6210df.s3.amazonaws.com cdn.optimizely.com logx.optimizely.com/v1/events wss://alive.github.com github.githubassets.com; font-src github.githubassets.com; form-action 'self' github.com gist.github.com; frame-ancestors 'none'; frame-src render.githubusercontent.com; img-src 'self' data: github.githubassets.com identicons.github.com collector.githubapp.com github-cloud.s3.amazonaws.com *.githubusercontent.com customer-stories-feed.github.com spotlights-feed.github.com; manifest-src 'self'; media-src github.githubassets.com; script-src github.githubassets.com; style-src 'unsafe-inline' github.githubassets.com; worker-src github.com/socket-worker-5029ae85.js gist.github.com/socket-worker-5029ae85.js
+        set-cookie: _gh_sess=C0qFKWk28qRx2eaV%2BzPB7V40xKe3ZZwAejZH9EIwfuJZKEzzVCogCa4HxVGqMf6Xqv8n6hPamP5QEZeGYnJ4r3xHsQfB1EaI5OI%2BVRX3pJFwr4fkKULRMNa78rqKSouA27e9zp%2BAeNU3LxYM6wq0PZsWx8dstPc5LHe66zqqKnaZtUo8sPIQFk5dXWxyBXa4JFIl%2BEkfw8W6Rd0tlABFsWreQq9yv%2FnZuUUjqj7Nbfaz3kvvlgDum6%2FQwJwTBgDyFjaFbF766Lb5lbO05wTcow%3D%3D--VbfSRRMCcivaiLiP--wInm808frTJTOwyDQrkvJw%3D%3D; Path=/; HttpOnly; Secure; SameSite=Lax
+        set-cookie: _octo=GH1.1.1509513775.1611375699; Path=/; Domain=github.com; Expires=Sun, 23 Jan 2022 04:21:39 GMT; Secure; SameSite=Lax
+        set-cookie: logged_in=no; Path=/; Domain=github.com; Expires=Sun, 23 Jan 2022 04:21:39 GMT; HttpOnly; Secure; SameSite=Lax
+        accept-ranges: bytes
+        x-github-request-id: 8FA8:2BC9:CBF2F:12C05F:600BA453
+      #+end_example
+
+ - What are the processes that happen when you type “http://somesite.com/some/page.html” into a browser?
+1. Your browser “resolves” the name into an IP address using DNS
+2. Your browser makes a request to that IP address, including headers (info about browser, any previous cookies, and other things)
+3. The server sends a response (typically, HTML, with a status code (200 if it was sucessful)
+4. The browser makes a DOM from that HTML, and finds any other resources needed (images, CSS, JavaScript, etc)
+5. The browser makes separate HTTP requests for those resources and receives response from the server for each
